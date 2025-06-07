@@ -3,6 +3,6 @@
 ## 如何运行
 1. Python3.10以上
 2. 安装numpy pygame
-'pip install numpy pygame'
+`pip install numpy pygame`
 3. 运行game.py
-'python game.py'
+`python game.py`
