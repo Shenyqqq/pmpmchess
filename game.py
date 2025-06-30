@@ -11,7 +11,14 @@ class Game:
         self.winner = None
         self.round = 0
         self.max_rounds = 50
+        self.control_black = 0
+        self.control_white = 0
+        self.n = size
 
+    def _update_control_counts(self):
+        """更新控制区域计数"""
+        self.control_black = np.sum(self.controlled == 1)
+        self.control_white = np.sum(self.controlled == -1)
     def get_valid_moves(self) -> List[Tuple[int, int]]:
         """返回可落子位置"""
         return [(i, j) for i in range(self.size)
@@ -28,13 +35,14 @@ class Game:
         i, j = pos
         self.board[i, j] = self.current_player
         self._check_three_connection(pos)
+        self._update_control_counts()
 
         self.round += 1
         if self.round >= self.max_rounds:
             self.game_over = True
             self.check_winner()
 
-        self.current_player = 3 - self.current_player  # 切换玩家
+        self.current_player = -self.current_player # 切换玩家
         return True
 
     def _check_three_connection(self, pos: Tuple[int, int]):
@@ -47,7 +55,7 @@ class Game:
         ]
 
         player = self.board[pos]
-        opponent = 3 - player
+        opponent = -player
         lines_to_control = []
         stones_to_remove = set()
 
@@ -180,18 +188,30 @@ class Game:
     def check_winner(self) -> Optional[int]:
         """根据占领区域数量判断胜负"""
         black_control = np.sum(self.controlled == 1)
-        white_control = np.sum(self.controlled == 2)
+        white_control = np.sum(self.controlled == -1)
 
         if black_control > white_control :
             self.winner = 1
         elif white_control > black_control:
-            self.winner = 2
+            self.winner = -1
         else:
             self.winner = 0
 
     def visualize(self):
         visualizer = GameVisualizer(self)
         visualizer.run()
+
+    def display(self,board):
+        self.board = np.zeros((self.n, self.n), dtype=np.int8)
+        self.board[board[:, :, 0] == 1] = 1
+        self.board[board[:, :, 1] == 1] = -1
+        self.controlled = np.zeros((self.n, self.n), dtype=np.int8)
+        self.controlled[board[:, :, 2] == 1] = 1
+        self.controlled[board[:, :, 3] == 1] = -1
+        print("Board")
+        print(self.board)
+        print("Control")
+        print(self.controlled)
 
 
 
